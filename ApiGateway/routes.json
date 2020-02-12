@@ -1,0 +1,38 @@
+{
+    "routes": [
+        {
+            "endpoint": "/config/General_Get",
+            "destination": {
+                "uri": "https://localhost:8082/public/ws/config.asmx/General_Get",
+                "method": "post",
+                "requiresAuthentication": "true",
+                "format": "xml"
+            }
+        },
+        {
+            "endpoint": "/login",
+            "loginService": 1,
+            "destination": {
+                "uri": "http://localhost:61977/token",
+                "method": "get",
+                "requiresAuthentication": "false",
+                "format": "json"
+            }
+        },
+        {
+            "endpoint": "/test1",
+            "destination": {
+                "uri": "https://restcountries.eu/rest/v2/region/europe",
+                "method": "get",
+                "requiresAuthentication": "false",
+                "format": "json"
+            }
+        }
+    ],
+    "authenticationServices": [
+        {
+            "loginService": 1,
+            "uri": "http://localhost:61977/api/auth/"
+        }
+    ]
+}
