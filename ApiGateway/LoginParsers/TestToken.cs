@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace ApiGateway.LoginParsers
@@ -38,7 +41,13 @@ namespace ApiGateway.LoginParsers
 
         private string _requestID = "";         // request id
 
-		public string MakeRequest(string xml)
+        private const int NOERROR = 0;
+        private const int XMLNULLO = 20;
+        private const int XML_NONVALIDO = 21;
+        private string XSD_LOGINPATH = "login.xsd";
+
+
+        public string MakeRequest(string xml)
 		{
             System.Text.StringBuilder sbJson = new System.Text.StringBuilder();
 
@@ -82,10 +91,13 @@ namespace ApiGateway.LoginParsers
             // in: data=<?xml version="1.0" encoding="utf-8" ?><Request ID="1"><Data><Username>Alberto</Username><Password>123456</Password></Data></Request>
             // out: username=Alberto&password=123456&grant_type=password
 
-            if (xml.Length == 0) return new StringBuilder();
+            if (xml.Length == 0) return new StringBuilder();            
 
             System.Text.StringBuilder sbJson = new StringBuilder();
             string xml_raw = xml.Substring(xml.IndexOf("<"));
+
+            if (!this.validaXML(xml_raw)) return new StringBuilder();
+
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(xml_raw);
             bool first = true;
@@ -167,6 +179,66 @@ namespace ApiGateway.LoginParsers
 
             return sbxmlOut;
         }
+
+        /// <summary>
+        /// Validazione XML con schema.
+        /// </summary>
+        /// <param name="strxmlIN">stringa corrispondente al file xml</param>
+        /// <param name="schemapath">percorso dello schema xsd</param>
+        /// <returns>risultato validazione</returns>
+        protected bool validaXML(string strxmlIN)
+        {
+            XmlDocument xmlIN = new XmlDocument();
+            bool result = true;
+
+            if (strxmlIN.Length > 0)
+            {
+                // leggo l'xml...
+
+                try
+                {
+                    xmlIN.LoadXml(strxmlIN);
+                }
+                catch
+                {
+                    result = false;
+                }
+
+                if (xmlIN != null)
+                {
+                    // lo valido con lo schema xsd ...
+                    // string schemafile = HttpContext.Current.ApplicationInstance.Server.MapPath(schemapath);
+                    string schemafile = XSD_LOGINPATH;
+                    XmlTextReader schemaReader = new XmlTextReader(schemafile);
+                    System.Text.StringBuilder validMsg = new StringBuilder();
+                    XmlSchema schema = XmlSchema.Read(schemaReader, (sender, args) =>
+                    {
+                        if (args.Severity == XmlSeverityType.Error)
+                            validMsg.Append("ERROR:").Append(
+                                args.Message).Append("\n");
+                    });
+                    xmlIN.Schemas.Add(schema);
+                    xmlIN.Validate((sender, args) =>
+                    {
+                        if (args.Severity == XmlSeverityType.Error)
+                            validMsg.Append("ERROR:").Append(args.Message).Append("\n");
+                    });
+
+                    if (validMsg.Length > 0)
+                    {
+                        // errori di validazione
+                        result = false;
+                    }
+                }
+            }
+            else
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
     }
 
 
