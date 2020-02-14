@@ -42,6 +42,15 @@ namespace ApiGateway.Routing
             HttpResponseMessage response;
             string requestContent = "";
 
+            //if (request.Method=="OPTIONS"){
+            //    response = new HttpResponseMessage();
+            //    response.StatusCode = System.Net.HttpStatusCode.OK;
+            //    response.Headers.Add("Access-Control-Request-Method", request.Method);
+            //    response.Headers.Add("Access-Control-Request-Headers", "Authorization");
+            //    return response;
+            //}
+
+
             // setting request content
             Stream receiveStream = request.Body;
             StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8);

@@ -18,11 +18,27 @@ namespace ApiGateway.Helper
                 return result;
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="rawdata"></param>
+        /// <returns></returns>
+        public static T LoadFromString<T>(string rawdata){
+            T result = JsonConvert.DeserializeObject<T>(rawdata);
+            return result;
+        }
 
         public static T Deserialize<T>(object jsonObject)
         {
             return JsonConvert.DeserializeObject<T>(Convert.ToString(jsonObject));
         }
 
-    }
+        public static string Serialize<T>(object rawdata)
+        {
+            string result = JsonConvert.SerializeObject(rawdata);
+            return result;
+        }
+
+    }    
 }

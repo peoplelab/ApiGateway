@@ -18,13 +18,19 @@ namespace ApiGateway.LoginParsers
         Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage);
         Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage);
     }
+    public class RawDataRequest{
+        public string data{ get; set; }
+    }
+    public class RawDataResponse
+    {
+        public string d { get; set; }
+    }
 
-
-	/// <summary>
-	/// Login parser for TokenAuthenticationWebAPI Authentication.
-	/// (test token project)
-	/// </summary>
-	public class TestToken : ILoginParser
+    /// <summary>
+    /// Login parser for TokenAuthenticationWebAPI Authentication.
+    /// (test token project)
+    /// </summary>
+    public class TestToken : ILoginParser
 	{
         public class JsonResponse
         {
@@ -38,6 +44,7 @@ namespace ApiGateway.LoginParsers
             public string error { get; set; }
             public string error_description { get; set; }
         }
+        
 
         private string _requestID = "";         // request id
 
@@ -66,7 +73,8 @@ namespace ApiGateway.LoginParsers
 
             string soap_envelope = this.addSoapEnvelope(this.setResponseBody(json_raw));
 
-            responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
+            //responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
+            responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "application/json");
 
 
             return responseMessage;
@@ -86,15 +94,17 @@ namespace ApiGateway.LoginParsers
         }
 
 
-        private System.Text.StringBuilder xml2Json(string xml)
+        private System.Text.StringBuilder xml2Json(string rawdata)
         {
-            // in: data=<?xml version="1.0" encoding="utf-8" ?><Request ID="1"><Data><Username>Alberto</Username><Password>123456</Password></Data></Request>
+            // in: {data : "<?xml version="1.0" encoding="utf-8" ?><Request ID="1"><Data><Username>Alberto</Username><Password>123456</Password></Data></Request>"}
             // out: username=Alberto&password=123456&grant_type=password
 
-            if (xml.Length == 0) return new StringBuilder();            
+            if (rawdata.Length == 0) return new StringBuilder();
+
+            RawDataRequest oRawData = Helper.JsonLoader.LoadFromString<RawDataRequest>(rawdata);
 
             System.Text.StringBuilder sbJson = new StringBuilder();
-            string xml_raw = xml.Substring(xml.IndexOf("<"));
+            string xml_raw = oRawData.data;
 
             if (!this.validaXML(xml_raw)) return new StringBuilder();
 
@@ -127,12 +137,16 @@ namespace ApiGateway.LoginParsers
         private string addSoapEnvelope(StringBuilder sbxmlOut)
         {
             StringBuilder sb1 = new StringBuilder();
-            sb1.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-            sb1.Append("<string xmlns=\"http://yeap.local/public/ws\">");
-            sb1.Append(sbxmlOut.Replace("<", "&lt;").Replace(">", "&gt;").ToString());
-            sb1.Append("</string>");
+            //sb1.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            //sb1.Append("<string xmlns=\"http://yeap.local/public/ws\">");
+            //sb1.Append(sbxmlOut.Replace("<", "&lt;").Replace(">", "&gt;").ToString());
+            //sb1.Append("</string>");
 
-            return sb1.ToString();
+            RawDataResponse rawdata = new RawDataResponse();
+            rawdata.d = sbxmlOut.ToString();
+            string json = Helper.JsonLoader.Serialize<RawDataResponse>(rawdata);
+
+            return json;
         }
         private StringBuilder setResponseBody(string json_raw)
         {
