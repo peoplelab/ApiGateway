@@ -3,14 +3,14 @@
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>
     <ActiveDebugProfile>IIS Express</ActiveDebugProfile>
-    <NameOfLastUsedPublishProfile>CustomProfile</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>Default</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="Login.xsd">
+    <Content Update="Login.xsd">
       <SubType>Designer</SubType>
-    </None>
+    </Content>
   </ItemGroup>
 </Project>

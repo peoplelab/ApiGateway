@@ -31,7 +31,6 @@ namespace ApiGateway.Routing
 
         private Destination()
         {
-            //this._uri = "/";
         }
 
 
@@ -42,19 +41,22 @@ namespace ApiGateway.Routing
             HttpResponseMessage response;
             string requestContent = "";
 
-            //if (request.Method=="OPTIONS"){
-            //    response = new HttpResponseMessage();
-            //    response.StatusCode = System.Net.HttpStatusCode.OK;
-            //    response.Headers.Add("Access-Control-Request-Method", request.Method);
-            //    response.Headers.Add("Access-Control-Request-Headers", "Authorization");
-            //    return response;
-            //}
-
-
             // setting request content
             Stream receiveStream = request.Body;
             StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8);
             requestContent = readStream.ReadToEnd();
+
+            //if (request.Method == "OPTIONS")
+            //{
+            //    response = new HttpResponseMessage();
+            //    response.StatusCode = System.Net.HttpStatusCode.OK;
+            //    response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //    response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            //    response.Headers.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+            //    return response;
+            //}
+
+
 
             // if request is a "login" request, it must be converted in a "destination" specific format because login service is not handled by us
             if (this._configRoute.LoginService > 0)

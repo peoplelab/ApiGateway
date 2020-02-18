@@ -36,20 +36,27 @@ namespace ApiGateway
 
         public async Task<HttpResponseMessage> RouteRequest(HttpRequest request)
         {
-            string path = request.Path.ToString();
+            Helper.Logger logger = Helper.Logger.Instance;                                    // logging
+            logger.Log("START NEW REQUEST", Helper.Logger.eLogLevels.DEBUG);
+
+            string path = request.Path.ToString();                                              // requested resource
+            logger.Log("Request path: " + path, Helper.Logger.eLogLevels.INFO);
 
             EntityRoutes.Route route;
             try
             {
                 route = Routes.First(r => r.Endpoint.Equals(path));
             }
-            catch
+            catch (Exception ex)
             {
-                return Helper.ErrorResponse.Create(request, (int)HttpStatusCode.NotFound, "The path could not be found.");
+                logger.Log("ERROR PARSING ROUTES.JSON. " + ex.Message, Helper.Logger.eLogLevels.ERROR);
+                return Helper.ErrorResponse.Create(request, (int)HttpStatusCode.NotFound, "The path " + path + " could not be found.");
             }
 
             if (route.Destination.RequiresAuthentication)
             {
+                logger.Log("Route asks authentication.", Helper.Logger.eLogLevels.WARNING);
+
                 string token = request.Headers["Authorization"];
                 byte loginService = Convert.ToByte(request.Headers["LoginService"]);
 
@@ -62,8 +69,19 @@ namespace ApiGateway
             }
 
             Routing.Destination destination = new Routing.Destination(route);
-            HttpResponseMessage response = await destination.SendRequest(request);
-            
+
+            HttpResponseMessage response = null;
+            try
+            {
+                response = await destination.SendRequest(request);
+            }catch (Exception ex){
+                logger.Log("SEND REQUEST ERROR." + ex.Message, Helper.Logger.eLogLevels.ERROR);
+                return Helper.ErrorResponse.Create(request, (int)HttpStatusCode.InternalServerError, "Server error: " + ex.Message);
+            }
+
+            logger.Log("REQUEST HANDLED.", Helper.Logger.eLogLevels.DEBUG);
+            logger.Dispose();
+
             return response;
         }
 

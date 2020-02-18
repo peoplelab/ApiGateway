@@ -74,10 +74,13 @@ namespace ApiGateway.Helper
             return sbxmlOut;
         }
         private static string getRequestID(string requestContent){
-            
+
             // getting request ID from request content
+            int startIndex = requestContent.IndexOf("<");
+            if (startIndex < 0) return System.DateTime.Now.ToString();      // an error occurs
+
             string requestID = "";
-            string xml_raw = requestContent.Substring(requestContent.IndexOf("<"));
+            string xml_raw = requestContent.Substring(startIndex);
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(xml_raw);
             System.Xml.XmlNode request_node = xmlDoc.SelectSingleNode("/Request");
