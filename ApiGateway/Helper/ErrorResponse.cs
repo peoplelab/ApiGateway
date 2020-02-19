@@ -9,9 +9,12 @@ namespace ApiGateway.Helper
 {
     public static class ErrorResponse
     {
-        public static async Task<HttpResponseMessage> Construct(HttpResponseMessage response, byte loginService)
+        public static async Task<HttpResponseMessage> Construct(Microsoft.AspNetCore.Http.HttpRequest request, HttpResponseMessage response, byte loginService)
         {
             LoginParsers.ILoginParser login = null;
+            string requestContent = getRequestContent(request); 
+            string requestID = getRequestID(requestContent);
+
             switch (loginService)
             {
                 case 1: // test token
@@ -19,7 +22,7 @@ namespace ApiGateway.Helper
                     break;
             }
 
-            return await login.WrapResponseError(response);
+            return await login.WrapResponseError(response, requestID);
                         
         }
 

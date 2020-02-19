@@ -14,9 +14,10 @@ using System.Xml.Serialization;
 namespace ApiGateway.LoginParsers
 {
     public interface ILoginParser{
+        string RequestID { get; }
         string MakeRequest(string xml);
-        Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage);
-        Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage);
+        Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage, string requestID);
+        Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage, string requestID);
     }
     public class RawDataRequest{
         public string data{ get; set; }
@@ -45,6 +46,13 @@ namespace ApiGateway.LoginParsers
             public string error_description { get; set; }
         }
         
+        public string RequestID
+        {
+            get
+            {
+                return this._requestID;
+            }
+        }
 
         private string _requestID = "";         // request id
 
@@ -63,15 +71,15 @@ namespace ApiGateway.LoginParsers
 
             return sbJson.ToString();
         }
-        public async Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage)
+        public async Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage, string requestID)
         {
             // if there is no "Http ok" code, response must be wrapped in an error response
-            if (responseMessage.StatusCode != System.Net.HttpStatusCode.OK) return await this.WrapResponseError(responseMessage);
+            if (responseMessage.StatusCode != System.Net.HttpStatusCode.OK) return await this.WrapResponseError(responseMessage, requestID);
 
 
             string json_raw = await responseMessage.Content.ReadAsStringAsync();
 
-            string soap_envelope = this.addSoapEnvelope(this.setResponseBody(json_raw));
+            string soap_envelope = this.addSoapEnvelope(this.setResponseBody(json_raw, requestID));
 
             //responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
             responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "application/json");
@@ -79,12 +87,12 @@ namespace ApiGateway.LoginParsers
 
             return responseMessage;
         }
-        public async Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage)
+        public async Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage, string requestID)
         {
                       
             string json_raw = await responseMessage.Content.ReadAsStringAsync();
 
-            string soap_envelope = this.addSoapEnvelope(this.setResponseBodyError(json_raw, (int) responseMessage.StatusCode));
+            string soap_envelope = this.addSoapEnvelope(this.setResponseBodyError(json_raw, (int) responseMessage.StatusCode, requestID));
 
             responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
 
@@ -101,7 +109,16 @@ namespace ApiGateway.LoginParsers
 
             if (rawdata.Length == 0) return new StringBuilder();
 
-            RawDataRequest oRawData = Helper.JsonLoader.LoadFromString<RawDataRequest>(rawdata);
+            RawDataRequest oRawData = null;
+            try
+            {
+                oRawData = Helper.JsonLoader.LoadFromString<RawDataRequest>(rawdata);
+            }
+            catch
+            {   
+                // an error occurs, rawdata not parsable to json
+                return new StringBuilder();
+            }
 
             System.Text.StringBuilder sbJson = new StringBuilder();
             string xml_raw = oRawData.data;
@@ -148,12 +165,12 @@ namespace ApiGateway.LoginParsers
 
             return json;
         }
-        private StringBuilder setResponseBody(string json_raw)
+        private StringBuilder setResponseBody(string json_raw, string requestID)
         {
             JsonResponse deserializedJson = JsonConvert.DeserializeObject<JsonResponse>(json_raw);
 
             ApiGateway.Helper.Xml.Login.Response response = new Helper.Xml.Login.Response();
-            response.ID = this._requestID;
+            response.ID = requestID;
             Helper.Xml.Login.ResponseResult result = new Helper.Xml.Login.ResponseResult();
             result.Codice = 0;
             result.Descrizione = "xxxxxxxxxxx"; // andrà tolto
@@ -172,12 +189,12 @@ namespace ApiGateway.LoginParsers
 
             return sbxmlOut;
         }
-        private StringBuilder setResponseBodyError(string json_raw, int httpcode)
+        private StringBuilder setResponseBodyError(string json_raw, int httpcode, string requestID)
         {
             JsonErrorResponse deserializedJson = JsonConvert.DeserializeObject<JsonErrorResponse>(json_raw);
 
             ApiGateway.Helper.Xml.Login.Response response = new Helper.Xml.Login.Response();
-            response.ID = this._requestID;
+            response.ID = requestID;
             Helper.Xml.Login.ResponseResult result = new Helper.Xml.Login.ResponseResult();
             result.Codice = httpcode;
             result.Descrizione = deserializedJson.error + ((deserializedJson.error_description?.Length > 0) ? " - " : "") + deserializedJson.error_description;

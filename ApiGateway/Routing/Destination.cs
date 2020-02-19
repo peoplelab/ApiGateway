@@ -46,17 +46,6 @@ namespace ApiGateway.Routing
             StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8);
             requestContent = readStream.ReadToEnd();
 
-            //if (request.Method == "OPTIONS")
-            //{
-            //    response = new HttpResponseMessage();
-            //    response.StatusCode = System.Net.HttpStatusCode.OK;
-            //    response.Headers.Add("Access-Control-Allow-Origin", "*");
-            //    response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-            //    response.Headers.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
-            //    return response;
-            //}
-
-
 
             // if request is a "login" request, it must be converted in a "destination" specific format because login service is not handled by us
             if (this._configRoute.LoginService > 0)
@@ -75,7 +64,7 @@ namespace ApiGateway.Routing
             }
 
             if (this._configRoute.LoginService > 0)
-                response = await this._loginParser.WrapResponse(response);
+                response = await this._loginParser.WrapResponse(response, this._loginParser.RequestID);
 
             return response;
         }
