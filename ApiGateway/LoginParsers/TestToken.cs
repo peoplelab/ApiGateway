@@ -79,7 +79,7 @@ namespace ApiGateway.LoginParsers
 
             string json_raw = await responseMessage.Content.ReadAsStringAsync();
 
-            string soap_envelope = this.addSoapEnvelope(this.setResponseBody(json_raw, requestID));
+           string soap_envelope = this.addSoapEnvelope(this.setResponseBody(json_raw, requestID));
 
             //responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
             responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "application/json");
@@ -153,17 +153,22 @@ namespace ApiGateway.LoginParsers
         }
         private string addSoapEnvelope(StringBuilder sbxmlOut)
         {
-            StringBuilder sb1 = new StringBuilder();
-            //sb1.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-            //sb1.Append("<string xmlns=\"http://yeap.local/public/ws\">");
-            //sb1.Append(sbxmlOut.Replace("<", "&lt;").Replace(">", "&gt;").ToString());
-            //sb1.Append("</string>");
+            //StringBuilder sb1 = new StringBuilder();
 
-            RawDataResponse rawdata = new RawDataResponse();
-            rawdata.d = sbxmlOut.ToString();
-            string json = Helper.JsonLoader.Serialize<RawDataResponse>(rawdata);
+            //RawDataResponse rawdata = new RawDataResponse();
+            //rawdata.d = sbxmlOut.ToString();
+            //string json = Helper.JsonLoader.Serialize<RawDataResponse>(rawdata);   
 
-            return json;
+            @string rawdata = new @string();
+            rawdata.Value = sbxmlOut.ToString();
+            System.Text.StringBuilder sbxml = new System.Text.StringBuilder();
+            XmlSerializer serOUT = new XmlSerializer(typeof(@string));
+            StringWriter rdr_out = new StringWriter(sbxml);
+            serOUT.Serialize(rdr_out, rawdata);
+
+            return sbxml.ToString();
+
+            //return json;
         }
         private StringBuilder setResponseBody(string json_raw, string requestID)
         {
@@ -271,6 +276,18 @@ namespace ApiGateway.LoginParsers
         }
 
     }
+
+
+	[System.SerializableAttribute()]
+	[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+	[System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
+	public partial class @string
+	{
+
+        [System.Xml.Serialization.XmlTextAttribute]
+        public string Value { get; set; }
+    }
+
 
 
 }

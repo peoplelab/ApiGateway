@@ -90,7 +90,7 @@ namespace ApiGateway
             catch (Exception ex)
             {
                 logger.Log("SEND REQUEST ERROR." + ex.Message, Helper.Logger.eLogLevels.ERROR);
-                return Helper.ErrorResponse.Create(request, (int)HttpStatusCode.InternalServerError, "Server error: " + ex.Message);
+                return Helper.ErrorResponse.Create(request, (int)HttpStatusCode.InternalServerError, "Server error: " + ex.ToString());
             }
 
             // closes logger
