@@ -153,22 +153,22 @@ namespace ApiGateway.LoginParsers
         }
         private string addSoapEnvelope(StringBuilder sbxmlOut)
         {
-            //StringBuilder sb1 = new StringBuilder();
+            StringBuilder sb1 = new StringBuilder();
 
-            //RawDataResponse rawdata = new RawDataResponse();
-            //rawdata.d = sbxmlOut.ToString();
-            //string json = Helper.JsonLoader.Serialize<RawDataResponse>(rawdata);   
+            RawDataResponse rawdata = new RawDataResponse();
+            rawdata.d = sbxmlOut.ToString();
+            string json = Helper.JsonLoader.Serialize<RawDataResponse>(rawdata);
 
-            @string rawdata = new @string();
-            rawdata.Value = sbxmlOut.ToString();
-            System.Text.StringBuilder sbxml = new System.Text.StringBuilder();
-            XmlSerializer serOUT = new XmlSerializer(typeof(@string));
-            StringWriter rdr_out = new StringWriter(sbxml);
-            serOUT.Serialize(rdr_out, rawdata);
+            //@string rawdata = new @string();
+            //rawdata.Value = sbxmlOut.ToString();
+            //System.Text.StringBuilder sbxml = new System.Text.StringBuilder();
+            //XmlSerializer serOUT = new XmlSerializer(typeof(@string));
+            //StringWriter rdr_out = new StringWriter(sbxml);
+            //serOUT.Serialize(rdr_out, rawdata);
 
-            return sbxml.ToString();
+            //return sbxml.ToString();
 
-            //return json;
+            return json;
         }
         private StringBuilder setResponseBody(string json_raw, string requestID)
         {
