@@ -9,6 +9,10 @@ namespace ApiGateway.Helper
 {
     public static class ErrorResponse
     {
+        public class RequestData
+        {
+            public string data { get; set; }
+        }
         public static async Task<HttpResponseMessage> Construct(Microsoft.AspNetCore.Http.HttpRequest request, HttpResponseMessage response, byte loginService)
         {
             LoginParsers.ILoginParser login = null;
@@ -76,14 +80,24 @@ namespace ApiGateway.Helper
 
             return sbxmlOut;
         }
-        private static string getRequestID(string requestContent){
+        private static string getRequestID(string requestContent)
+        {
+            string requestID = "";
+
+            // is it a json?
+            RequestData requestData = new RequestData();
+
+            try
+            {
+                requestData = JsonLoader.LoadFromString<RequestData>(requestContent);                
+            }catch{  }
+
+            if ((requestData == null) || (requestData.data == "")) return "";  // it's not a json...
+
+            // requestdata.data must be an xml...
 
             // getting request ID from request content
-            int startIndex = requestContent.IndexOf("<");
-            if (startIndex < 0) return System.DateTime.Now.ToString();      // an error occurs
-
-            string requestID = "";
-            string xml_raw = requestContent.Substring(startIndex);
+            string xml_raw = requestData.data;
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(xml_raw);
             System.Xml.XmlNode request_node = xmlDoc.SelectSingleNode("/Request");

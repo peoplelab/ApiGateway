@@ -12,9 +12,9 @@ namespace ApiGateway.Routing
 {
     public class Destination
     {
-        private EntityRoutes.Route _configRoute;
-        private static HttpClient client = new HttpClient();
-        private LoginParsers.ILoginParser _loginParser = null;
+        private EntityRoutes.Route _configRoute;                // Destination Route
+        private static HttpClient client = new HttpClient();    // Communication client
+        private LoginParsers.ILoginParser _loginParser = null;  // Login Parser object (depending on request "loginservice" header)
 
 
 

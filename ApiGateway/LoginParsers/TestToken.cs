@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,19 +10,58 @@ using System.Xml.Serialization;
 
 namespace ApiGateway.LoginParsers
 {
+    /// <summary>
+    /// Interface for Login Parsers.
+    /// </summary>
     public interface ILoginParser{
+        /// <summary>
+        /// Request identifier.
+        /// </summary>
         string RequestID { get; }
+        /// <summary>
+        /// Request builder (from xml to ...)
+        /// </summary>
+        /// <param name="xml">xml IN as a string</param>
+        /// <returns>formatted request string</returns>
         string MakeRequest(string xml);
+        /// <summary>
+        /// OK Response builder (from original format to xml "classic" format)
+        /// </summary>
+        /// <param name="responseMessage">original response</param>
+        /// <param name="requestID">request identifier</param>
+        /// <returns>xml formatted response</returns>
         Task<HttpResponseMessage> WrapResponse(HttpResponseMessage responseMessage, string requestID);
+        /// <summary>
+        /// Error Response builder (from original format to xml "classic" format)
+        /// </summary>
+        /// <param name="responseMessage">original response</param>
+        /// <param name="requestID">request identifier</param>
+        /// <returns>xml formatted response</returns>
         Task<HttpResponseMessage> WrapResponseError(HttpResponseMessage responseMessage, string requestID);
     }
+
+
+
+
+
+    /// <summary>
+    /// Serializator for Request.
+    /// </summary>
     public class RawDataRequest{
         public string data{ get; set; }
     }
+    /// <summary>
+    /// Serializator for Response.
+    /// </summary>
     public class RawDataResponse
     {
         public string d { get; set; }
     }
+
+
+
+
+
 
     /// <summary>
     /// Login parser for TokenAuthenticationWebAPI Authentication.
@@ -33,6 +69,9 @@ namespace ApiGateway.LoginParsers
     /// </summary>
     public class TestToken : ILoginParser
 	{
+        /// <summary>
+        /// Serializator for json reponse (ok).
+        /// </summary>
         public class JsonResponse
         {
             public string access_token { get; set; }
@@ -40,12 +79,25 @@ namespace ApiGateway.LoginParsers
             public int expires_in { get; set; }
 
         }
+        /// <summary>
+        /// Serializator for json response (error).
+        /// </summary>
         public class JsonErrorResponse
         {
             public string error { get; set; }
             public string error_description { get; set; }
         }
         
+        // fields
+        private string _requestID = "";         // request id
+
+        // consts
+        private const int NOERROR = 0;
+        private const int XMLNULLO = 20;
+        private const int XML_NONVALIDO = 21;
+        private const string XSD_LOGINPATH = "login.xsd";
+
+
         public string RequestID
         {
             get
@@ -53,13 +105,6 @@ namespace ApiGateway.LoginParsers
                 return this._requestID;
             }
         }
-
-        private string _requestID = "";         // request id
-
-        private const int NOERROR = 0;
-        private const int XMLNULLO = 20;
-        private const int XML_NONVALIDO = 21;
-        private string XSD_LOGINPATH = "login.xsd";
 
 
         public string MakeRequest(string xml)
@@ -100,6 +145,7 @@ namespace ApiGateway.LoginParsers
 
             return responseMessage;
         }
+
 
 
         private System.Text.StringBuilder xml2Json(string rawdata)
@@ -276,18 +322,6 @@ namespace ApiGateway.LoginParsers
         }
 
     }
-
-
-	[System.SerializableAttribute()]
-	[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-	[System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
-	public partial class @string
-	{
-
-        [System.Xml.Serialization.XmlTextAttribute]
-        public string Value { get; set; }
-    }
-
 
 
 }
