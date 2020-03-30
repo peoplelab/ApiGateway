@@ -3,7 +3,7 @@
         {
             "endpoint": "/config/General_Get",
             "destination": {
-                "uri": "https://localhost:8082/public/ws/config.asmx/General_Get",
+                "uri": "https://test-yeap.people-manager.it:8082/public/ws/config.asmx/General_Get",
                 "method": "post",
                 "requiresAuthentication": "true",
                 "format": "xml"
@@ -15,6 +15,16 @@
             "destination": {
                 "uri": "http://localhost:61977/token",
                 "method": "get",
+                "requiresAuthentication": "false",
+                "format": "json"
+            }
+        },
+        {
+            "endpoint": "/loginwp",
+            "loginService": 2,
+            "destination": {
+                "uri": "https://www.dev-yeap.it/wp-json/yeap/v2/login",
+                "method": "post",
                 "requiresAuthentication": "false",
                 "format": "json"
             }

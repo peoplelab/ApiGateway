@@ -26,6 +26,9 @@ namespace ApiGateway.Routing
                 case 1: //  test token 
                     this._loginParser = new LoginParsers.TestToken();
                     break;
+                case 2: // wp token
+                    this._loginParser = new LoginParsers.WPToken();
+                    break;
             }
         }
 
