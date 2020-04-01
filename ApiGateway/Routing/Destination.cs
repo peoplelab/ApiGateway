@@ -53,7 +53,7 @@ namespace ApiGateway.Routing
             // if request is a "login" request, it must be converted in a "destination" specific format because login service is not handled by us
             if (this._configRoute.LoginService > 0)
             {
-                requestContent = this._loginParser.MakeRequest(requestContent);
+                requestContent = this._loginParser.SetRequest(requestContent);
             }
             
 
