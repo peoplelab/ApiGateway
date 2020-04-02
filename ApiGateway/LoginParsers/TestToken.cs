@@ -31,8 +31,6 @@ namespace ApiGateway.LoginParsers
         }
         
 
-
-
         protected override StringBuilder setRequestBody(string xml)
         {
             // in: {data : "<?xml version="1.0" encoding="utf-8" ?><Request ID="1"><Data><Username>Alberto</Username><Password>123456</Password></Data></Request>"}
@@ -114,6 +112,4 @@ namespace ApiGateway.LoginParsers
         }
 
     }
-
-
 }

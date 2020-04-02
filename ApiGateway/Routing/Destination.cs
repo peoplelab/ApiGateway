@@ -50,12 +50,18 @@ namespace ApiGateway.Routing
             requestContent = readStream.ReadToEnd();
 
 
+            string error_message = "";
             // if request is a "login" request, it must be converted in a "destination" specific format because login service is not handled by us
             if (this._configRoute.LoginService > 0)
             {
-                requestContent = this._loginParser.SetRequest(requestContent);
+                requestContent = this._loginParser.SetRequest(requestContent, out error_message);
             }
             
+            // if an error occurs, error_message is not equal to string empty. So the process must be stopped.
+            if (error_message.Length > 0){
+                response = this._loginParser.CreateResponseError(error_message, this._loginParser.RequestID);
+                return response;
+            }
 
             using (var newRequest = new HttpRequestMessage(new HttpMethod(this._configRoute.Destination.Method), this._configRoute.Destination.Uri))
             {

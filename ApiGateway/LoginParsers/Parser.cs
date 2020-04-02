@@ -1,8 +1,10 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
+using System.Xml.Serialization;
 
 namespace ApiGateway.LoginParsers
 {
@@ -62,9 +64,11 @@ namespace ApiGateway.LoginParsers
 		/// Set body request from xml to json.
 		/// </summary>
 		/// <param name="xml">request in xml format</param>
+		/// <param name="error_message">optional error message (only if an error occurs)</param>
 		/// <returns>request in json format</returns>
-		public string SetRequest(string xml)
+		public string SetRequest(string xml, out string error_message)
 		{
+			error_message = "";
 			if (xml.Length == 0) return "";
 
 			// xml validation
@@ -82,7 +86,7 @@ namespace ApiGateway.LoginParsers
 			System.Text.StringBuilder sbJson = new StringBuilder();
 			string xml_data = oRawData.data;
 
-			if (!this.validaXML(xml_data)) return "";
+			if (!this.validaXML(xml_data, out error_message)) return "";
 
 			// conversion xml to json
 
@@ -131,6 +135,24 @@ namespace ApiGateway.LoginParsers
 
 			return responseMessage;
 		}
+		/// <summary>
+		/// Create a response error based on an error message.
+		/// </summary>
+		/// <param name="error_message">error message in a string format</param>
+		/// <param name="requestID">original request id.</param>
+		/// <returns></returns>
+		public HttpResponseMessage CreateResponseError(string error_message, string requestID)
+		{
+			HttpResponseMessage responseMessage = new HttpResponseMessage();
+
+			string soap_envelope = this.addSoapEnvelope(this.setResponseBodyError(error_message, requestID));
+
+			responseMessage.Content = new StringContent(soap_envelope, Encoding.UTF8, "text/xml");
+
+			responseMessage.StatusCode = System.Net.HttpStatusCode.OK;
+
+			return responseMessage;
+		}
 
 		#endregion
 
@@ -146,16 +168,43 @@ namespace ApiGateway.LoginParsers
 
 			return json;
 		}
+		/// <summary>
+		/// Set error response based on an error message.
+		/// </summary>
+		/// <param name="error_response">error response in a string format.</param>
+		/// <param name="requestID">request original id</param>
+		/// <returns></returns>
+		private StringBuilder setResponseBodyError(string error_response, string requestID)
+		{
+			
+			ApiGateway.Helper.Xml.Login.Response response = new Helper.Xml.Login.Response();
+			response.ID = requestID;
+			Helper.Xml.Login.ResponseResult result = new Helper.Xml.Login.ResponseResult();
+			result.Codice = (int)System.Net.HttpStatusCode.BadRequest;
+			result.Descrizione = error_response;
+			ApiGateway.Helper.Xml.Login.ResponseData data = null;
+
+			response.Result = result;
+			response.Data = data;
+
+			System.Text.StringBuilder sbxmlOut = new System.Text.StringBuilder();
+			XmlSerializer serOUT = new XmlSerializer(typeof(ApiGateway.Helper.Xml.Login.Response));
+			StringWriter rdr_out = new StringWriter(sbxmlOut);
+			serOUT.Serialize(rdr_out, response);
+
+			return sbxmlOut;
+		}
 
 		/// <summary>
 		/// Validazione XML con schema.
 		/// </summary>
 		/// <param name="strxmlIN">stringa corrispondente al file xml</param>
-		/// <param name="schemapath">percorso dello schema xsd</param>
+		/// <param name="error_message">optional error message (only if an error occurs)</param>
 		/// <returns>risultato validazione</returns>
-		protected bool validaXML(string strxmlIN)
+		protected bool validaXML(string strxmlIN, out string error_message)
 		{
 			XmlDocument xmlIN = new XmlDocument();
+			error_message = "";
 			bool result = true;
 
 			if (strxmlIN.Length > 0)
@@ -169,6 +218,7 @@ namespace ApiGateway.LoginParsers
 				catch
 				{
 					result = false;
+					error_message = "XML Request is not well-formed.";
 				}
 
 				if (result)
@@ -195,12 +245,14 @@ namespace ApiGateway.LoginParsers
 					{
 						// errori di validazione
 						result = false;
+						error_message = validMsg.ToString();
 					}
 				}
 			}
 			else
 			{
 				result = false;
+				error_message = "XML Request is null.";
 			}
 
 			return result;
