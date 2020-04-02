@@ -96,8 +96,23 @@ namespace ApiGateway.Helper
 
             // requestdata.data must be an xml...
 
-            // getting request ID from request content
             string xml_raw = requestData.data;
+
+            if (xml_raw == null)
+            {
+                // it means data was not recognized. so it could be in this format: data=<...xml...>
+                int data_index = requestContent.IndexOf("data=");
+                
+                if (data_index >= 0){
+                    // ok, it's in the expected format...
+                    data_index = data_index + "data=".Length;  
+                    xml_raw = requestContent.Substring(data_index, requestContent.Length - data_index);                    
+                }
+            }
+
+            if (xml_raw == null) return "";     // an error occurs
+
+            // getting request ID from request content
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(xml_raw);
             System.Xml.XmlNode request_node = xmlDoc.SelectSingleNode("/Request");
