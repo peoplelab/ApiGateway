@@ -15,10 +15,34 @@ namespace ApiGateway.LoginParsers
         /// </summary>
         public class JsonResponse
         {
+            /// <summary>
+            /// Access Token
+            /// </summary>
             public string access_token { get; set; }
-            public string token_type { get; set; }
+            /// <summary>
+            /// Codice Utente
+            /// </summary>
+            public string user { get; set; }
+            /// <summary>
+            /// Nome Utente
+            /// </summary>
+            public string nome { get; set; }
+            /// <summary>
+            /// Cognome Utente
+            /// </summary>
+            public string cognome { get; set; }
+            /// <summary>
+            /// Ruolo (stringa)
+            /// </summary>
+            public string ruolo { get; set; }
+            /// <summary>
+            /// Tipo Cliente (stringa)
+            /// </summary>
+            public string customer { get; set; }
+            /// <summary>
+            /// Durata token
+            /// </summary>
             public int expires_in { get; set; }
-
         }
         /// <summary>
         /// Serializator for json response (error).
@@ -88,7 +112,11 @@ namespace ApiGateway.LoginParsers
 
             data.AccessToken = deserializedJson.access_token;
             data.Expires = deserializedJson.expires_in;
-            data.TokenType = deserializedJson.token_type;
+            data.Code = deserializedJson.user;
+            data.Nome = deserializedJson.nome;
+            data.Cognome = deserializedJson.cognome;
+            data.Ruolo = deserializedJson.ruolo;
+            data.Customer = deserializedJson.customer;
             response.Result = result;
             response.Data = data;
 

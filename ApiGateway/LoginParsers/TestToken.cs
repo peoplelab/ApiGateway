@@ -78,7 +78,7 @@ namespace ApiGateway.LoginParsers
 
             data.AccessToken = deserializedJson.access_token;
             data.Expires = deserializedJson.expires_in;
-            data.TokenType = deserializedJson.token_type;
+            //data.TokenType = deserializedJson.token_type;
             response.Result = result;
             response.Data = data;
 

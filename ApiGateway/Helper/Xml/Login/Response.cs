@@ -105,7 +105,11 @@ namespace ApiGateway.Helper.Xml.Login
     public class ResponseData
     {
         private string _accessToken = "";
-        private string _tokenType = "";
+        private string _code = "";
+        private string _nome = "";
+        private string _cognome = "";
+        private string _ruolo = "";
+        private string _customer = "";
         private int _expires = 0;
 
         public string AccessToken
@@ -119,15 +123,59 @@ namespace ApiGateway.Helper.Xml.Login
                 this._accessToken = value;
             }
         }
-        public string TokenType
+        public string Code
         {
             get
             {
-                return this._tokenType;
+                return this._code;
             }
             set
             {
-                this._tokenType = value;
+                this._code = value;
+            }
+        }
+        public string Nome
+        {
+            get
+            {
+                return this._nome;
+            }
+            set
+            {
+                this._nome = value;
+            }
+        }
+        public string Cognome
+        {
+            get
+            {
+                return this._cognome;
+            }
+            set
+            {
+                this._cognome = value;
+            }
+        }
+        public string Ruolo
+        {
+            get
+            {
+                return this._ruolo;
+            }
+            set
+            {
+                this._ruolo = value;
+            }
+        }
+        public string Customer
+        {
+            get
+            {
+                return this._customer;
+            }
+            set
+            {
+                this._customer = value;
             }
         }
         public int Expires
